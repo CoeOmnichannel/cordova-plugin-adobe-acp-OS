@@ -12,6 +12,12 @@
 
 package com.adobe.marketing.mobile.cordova;
 
+import android.Manifest;
+import android.os.Build;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Analytics;
 import com.adobe.marketing.mobile.Event;
@@ -60,6 +66,11 @@ public class ACPCore_Cordova extends CordovaPlugin {
     final static String METHOD_CORE_TRACK_STATE = "trackState";
     final static String METHOD_CORE_UPDATE_CONFIGURATION = "updateConfiguration";
     final static String METHOD_CORE_GET_APP_ID = "getAppId";
+    final static String METHOD_CORE_PUSH_GET_STATUS = "getPushNotificationStatus";
+    final static String METHOD_CORE_PUSH_REQUEST_PERMISSION = "requestPushNotificationPermission";
+    final int PERMISSION_REQUEST_CODE = 112;
+
+    private static final String PERMISSION_POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
     private String appId;
     private String initTime;
@@ -110,6 +121,12 @@ public class ACPCore_Cordova extends CordovaPlugin {
             return true;
         } else if (METHOD_CORE_GET_APP_ID.equals(action)) {
             this.getAppId(callbackContext);
+            return true;
+        }  else if (METHOD_CORE_PUSH_GET_STATUS.equals(action)) {
+            this.getPushNotificationStatus(callbackContext);
+            return true;
+        }  else if (METHOD_CORE_PUSH_REQUEST_PERMISSION.equals(action)) {
+            this.requestPushNotificationPermission(callbackContext);
             return true;
         }
 
@@ -453,6 +470,27 @@ public class ACPCore_Cordova extends CordovaPlugin {
         eventMap.put("data", event.getEventData());
 
         return eventMap;
+    }
+
+    private void getPushNotificationStatus(final CallbackContext callbackContext) {
+        cordova.getThreadPool().execute(() -> {
+            try {
+                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(cordova.getActivity());
+                callbackContext.success(String.valueOf(notificationManagerCompat.areNotificationsEnabled()));
+            } catch (Exception e) {
+                callbackContext.error(e.getMessage());
+            }
+        });
+    }
+
+    private void requestPushNotificationPermission(final CallbackContext callbackContext) {
+        if(Build.VERSION.SDK_INT >= 33) { // Android 13+
+
+            ActivityCompat.requestPermissions(this.cordova.getActivity(),
+                    new String[]{PERMISSION_POST_NOTIFICATIONS},
+                    PERMISSION_REQUEST_CODE);
+
+        }
     }
 
     // ===============================================================
