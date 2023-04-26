@@ -12,16 +12,16 @@
 
 package com.adobe.marketing.mobile.cordova;
 
-import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.adobe.marketing.mobile.AdobeCallback;
 import com.adobe.marketing.mobile.Analytics;
+import com.adobe.marketing.mobile.Assurance;
+import com.adobe.marketing.mobile.Campaign;
 import com.adobe.marketing.mobile.Event;
-import com.adobe.marketing.mobile.Event.Builder;
 import com.adobe.marketing.mobile.ExtensionError;
 import com.adobe.marketing.mobile.ExtensionErrorCallback;
 import com.adobe.marketing.mobile.Identity;
@@ -29,25 +29,24 @@ import com.adobe.marketing.mobile.InvalidInitException;
 import com.adobe.marketing.mobile.Lifecycle;
 import com.adobe.marketing.mobile.LoggingMode;
 import com.adobe.marketing.mobile.MobileCore;
-import com.adobe.marketing.mobile.MobileServices;
 import com.adobe.marketing.mobile.MobilePrivacyStatus;
+import com.adobe.marketing.mobile.MobileServices;
+import com.adobe.marketing.mobile.Places;
+import com.adobe.marketing.mobile.PlacesMonitor;
 import com.adobe.marketing.mobile.Signal;
 import com.adobe.marketing.mobile.Target;
 import com.adobe.marketing.mobile.UserProfile;
-import com.adobe.marketing.mobile.WrapperType;
-import com.adobe.marketing.mobile.Places;
-import com.adobe.marketing.mobile.PlacesMonitor;
-import com.adobe.marketing.mobile.Campaign;
-import com.adobe.marketing.mobile.Assurance;
-
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PermissionHelper;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -68,12 +67,13 @@ public class ACPCore_Cordova extends CordovaPlugin {
     final static String METHOD_CORE_GET_APP_ID = "getAppId";
     final static String METHOD_CORE_PUSH_GET_STATUS = "getPushNotificationStatus";
     final static String METHOD_CORE_PUSH_REQUEST_PERMISSION = "requestPushNotificationPermission";
-    final int PERMISSION_REQUEST_CODE = 112;
+    final static int PERMISSION_REQUEST_CODE = 20230426;
 
     private static final String PERMISSION_POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
     private String appId;
     private String initTime;
+    private CallbackContext _tmpCallbackContext;
 
     // ===============================================================
     // all calls filter through this method
@@ -484,13 +484,31 @@ public class ACPCore_Cordova extends CordovaPlugin {
     }
 
     private void requestPushNotificationPermission(final CallbackContext callbackContext) {
-        if(Build.VERSION.SDK_INT >= 33) { // Android 13+
-
-            ActivityCompat.requestPermissions(this.cordova.getActivity(),
-                    new String[]{PERMISSION_POST_NOTIFICATIONS},
-                    PERMISSION_REQUEST_CODE);
-
+        if(Build.VERSION.SDK_INT >= 33){ // Android 13+
+            _tmpCallbackContext = callbackContext;
+            String[] permissions = {PERMISSION_POST_NOTIFICATIONS};
+            PermissionHelper.requestPermissions(this, PERMISSION_REQUEST_CODE, permissions);
+        } else {
+            callbackContext.success("GRANTED");
         }
+    }
+
+    @Override
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException
+    {
+        for(int r:grantResults)
+        {
+            if(r == PackageManager.PERMISSION_DENIED)
+            {
+                this._tmpCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "NO_PERMISSION"));
+                return;
+            }
+        }
+        if(requestCode == PERMISSION_REQUEST_CODE) {
+            this._tmpCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, "GRANTED"));
+        }
+
     }
 
     // ===============================================================
