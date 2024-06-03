@@ -527,7 +527,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
         MobileCore.setApplication(this.cordova.getActivity().getApplication());
-        //ACPFirebaseMessagingService.handleMessage(this.cordova.getActivity().getIntent().getExtras(), true);
+        ACPFirebaseMessagingService.handleMessage(this.cordova.getActivity().getIntent().getExtras(), true);
         MobileCore.lifecycleStart(null);
     }
     
