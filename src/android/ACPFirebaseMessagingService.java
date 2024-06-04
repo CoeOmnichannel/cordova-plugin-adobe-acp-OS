@@ -98,6 +98,8 @@ public class ACPFirebaseMessagingService extends FirebasePluginMessageReceiver {
       MobileCore.collectMessageInfo(contextData);
 
       if (!skipDeepLink) {
+        Log.d(ACP_CORE_PUSH_TAG_LOG, "handleCallback");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, data.toString());
         handleCallback(data);
       }
       Log.d(ACP_CORE_PUSH_TAG_LOG, "handleTracking successfully");
@@ -107,6 +109,7 @@ public class ACPFirebaseMessagingService extends FirebasePluginMessageReceiver {
   private static void handleCallback(final Map<String, String> data) {
     JSONObject jsonObject = new JSONObject(data);
     ACPCore_Cordova.intance.subscribe(jsonObject);
+
   }
 
 }
