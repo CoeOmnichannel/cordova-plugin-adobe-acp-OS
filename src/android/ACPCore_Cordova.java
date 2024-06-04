@@ -89,6 +89,8 @@ public class ACPCore_Cordova extends CordovaPlugin {
 
     private CallbackContext subscriberContext;
 
+    private boolean wasHandled = false;
+
     public static ACPCore_Cordova intance;
 
     // ===============================================================
@@ -469,6 +471,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
         super.onNewIntent(intent);
         final Bundle data = intent.getExtras();
         Log.d(ACP_CORE_PUSH_TAG_LOG, "public void onNewIntent(Intent intent)");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
         if (data != null && data.containsKey("google.message_id")) {
             Log.d(ACP_CORE_PUSH_TAG_LOG, "newIntent before handleMessage");
             ACPFirebaseMessagingService.handleMessage(data, true);
@@ -526,8 +529,18 @@ public class ACPCore_Cordova extends CordovaPlugin {
     @Override
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
+        final Bundle data = this.cordova.getActivity().getIntent().getExtras();
         MobileCore.setApplication(this.cordova.getActivity().getApplication());
-        ACPFirebaseMessagingService.handleMessage(this.cordova.getActivity().getIntent().getExtras(), true);
+
+        Log.d(ACP_CORE_PUSH_TAG_LOG, "public void onResume");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, "handled onResume " + wasHandled);
+
+        if(!wasHandled) {
+            ACPFirebaseMessagingService.handleMessage(data, true);
+            wasHandled = true;
+        }
+
         MobileCore.lifecycleStart(null);
     }
     
@@ -537,10 +550,11 @@ public class ACPCore_Cordova extends CordovaPlugin {
         final Bundle data = this.cordova.getActivity().getIntent().getExtras();
 
         Log.d(ACP_CORE_PUSH_TAG_LOG, "public void pluginInitialize()");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
         if (data != null && data.containsKey("google.message_id")) {
             ACPFirebaseMessagingService.handleMessage(data, true);
         }
-        Log.d(ACP_CORE_PUSH_TAG_LOG, "public void pluginInitialize()");
+
     }
 
     public void openScreenByDeepLink(String deepLink) {
@@ -556,6 +570,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
 
     public void subscribe(JSONObject result) {
         Log.d(ACP_CORE_PUSH_TAG_LOG, "public void subscribe(JSONObject result)" );
+        Log.d(ACP_CORE_PUSH_TAG_LOG, result.toString());
         if(this.subscriberContext != null) {
             cordova.getThreadPool().execute(() -> {
                 try {
@@ -564,6 +579,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
                     pluginResult.setKeepCallback(true);
                     this.subscriberContext.sendPluginResult(pluginResult);
                     Log.d(ACP_CORE_PUSH_TAG_LOG, "subscriberContext sent :::: " + pluginResult);
+                    clearPushPreferences();
                 } catch (Exception e) {
                     this.subscriberContext.error(e.getMessage());
                 }
@@ -574,6 +590,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
     }
 
     public static void clearPushPreferences() {
+        Log.d(ACP_CORE_PUSH_TAG_LOG, "clearPushPreferences");
         SharedPreferences pref = ACPCore_Cordova.intance.cordova.getContext()
                 .getSharedPreferences(ACP_CORE_LAST_PUSH_PREF_KEY, Context.MODE_PRIVATE);
         pref.edit().clear().apply();
