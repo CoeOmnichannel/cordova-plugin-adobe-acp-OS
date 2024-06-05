@@ -536,10 +536,10 @@ public class ACPCore_Cordova extends CordovaPlugin {
         Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
         Log.d(ACP_CORE_PUSH_TAG_LOG, "handled onResume " + wasHandled);
 
-        if(!wasHandled) {
+       // if(!wasHandled) {
             ACPFirebaseMessagingService.handleMessage(data, true);
-            wasHandled = true;
-        }
+         //   wasHandled = true;
+        //}
 
         MobileCore.lifecycleStart(null);
     }
