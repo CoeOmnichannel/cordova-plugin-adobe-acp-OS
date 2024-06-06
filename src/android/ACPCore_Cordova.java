@@ -590,10 +590,10 @@ public class ACPCore_Cordova extends CordovaPlugin {
     }
 
     public static void clearPushPreferences() {
-        Log.d(ACP_CORE_PUSH_TAG_LOG, "clearPushPreferences");
+      /*  Log.d(ACP_CORE_PUSH_TAG_LOG, "clearPushPreferences");
         SharedPreferences pref = ACPCore_Cordova.intance.cordova.getContext()
                 .getSharedPreferences(ACP_CORE_LAST_PUSH_PREF_KEY, Context.MODE_PRIVATE);
-        pref.edit().clear().apply();
+        pref.edit().clear().apply();*/
     }
 
     public static void addPushToPreferences(Map<String, String> data) {
