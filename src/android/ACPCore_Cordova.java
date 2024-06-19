@@ -472,7 +472,8 @@ public class ACPCore_Cordova extends CordovaPlugin {
         final Bundle data = intent.getExtras();
         Log.d(ACP_CORE_PUSH_TAG_LOG, "public void onNewIntent(Intent intent)");
         Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
-        if (data != null && data.containsKey("google.message_id")) {
+
+        if (data != null) {
             Log.d(ACP_CORE_PUSH_TAG_LOG, "newIntent before handleMessage");
             ACPFirebaseMessagingService.handleMessage(data, true);
             Log.d(ACP_CORE_PUSH_TAG_LOG, "newIntent after handleMessage");
@@ -536,10 +537,10 @@ public class ACPCore_Cordova extends CordovaPlugin {
         Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
         Log.d(ACP_CORE_PUSH_TAG_LOG, "handled onResume " + wasHandled);
 
-       // if(!wasHandled) {
+        if(!wasHandled) {
             ACPFirebaseMessagingService.handleMessage(data, true);
-         //   wasHandled = true;
-        //}
+            wasHandled = true;
+        }
 
         MobileCore.lifecycleStart(null);
     }
@@ -551,7 +552,7 @@ public class ACPCore_Cordova extends CordovaPlugin {
 
         Log.d(ACP_CORE_PUSH_TAG_LOG, "public void pluginInitialize()");
         Log.d(ACP_CORE_PUSH_TAG_LOG, data != null ? data.toString() : "data empty");
-        if (data != null && data.containsKey("google.message_id")) {
+        if (data != null) {
             ACPFirebaseMessagingService.handleMessage(data, true);
         }
 
@@ -590,10 +591,10 @@ public class ACPCore_Cordova extends CordovaPlugin {
     }
 
     public static void clearPushPreferences() {
-      /*  Log.d(ACP_CORE_PUSH_TAG_LOG, "clearPushPreferences");
+        Log.d(ACP_CORE_PUSH_TAG_LOG, "clearPushPreferences");
         SharedPreferences pref = ACPCore_Cordova.intance.cordova.getContext()
                 .getSharedPreferences(ACP_CORE_LAST_PUSH_PREF_KEY, Context.MODE_PRIVATE);
-        pref.edit().clear().apply();*/
+        pref.edit().clear().apply();
     }
 
     public static void addPushToPreferences(Map<String, String> data) {
